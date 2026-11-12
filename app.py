@@ -196,20 +196,25 @@ def get_weekday_grid(df: pd.DataFrame):
 
 
 # 5. PDF Compilation Engine (ReportLab)
-def generate_calendar_pdf(df: pd.DataFrame, calendar_weeks: list, month_label: str) -> io.BytesIO:
-    """Assembles a high-resolution landscape calendar with active enrollment links."""
-    pdf_buffer = io.BytesIO()
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Image as RLImage
 
+def generate_calendar_pdf(df: pd.DataFrame) -> io.BytesIO:
+    """Assembles a high-resolution landscape calendar with banner and active enrollment links."""
+    pdf_buffer = io.BytesIO()
+    
+    # Landscape Letter (792 x 612 pt) with 18 pt margins (756 pt printable width)
     doc = SimpleDocTemplate(
         pdf_buffer,
         pagesize=landscape(letter),
         leftMargin=18,
         rightMargin=18,
-        topMargin=20,
+        topMargin=18,
         bottomMargin=18
     )
-
+    
     styles = getSampleStyleSheet()
+    
     title_style = ParagraphStyle('DocTitle', parent=styles['Heading1'], fontSize=15, leading=17, textColor=colors.HexColor('#1f4e79'), alignment=1)
     day_header_style = ParagraphStyle('DayHeader', parent=styles['Normal'], fontSize=9, leading=11, fontName='Helvetica-Bold', textColor=colors.white, alignment=1)
     date_num_style = ParagraphStyle('DateNum', parent=styles['Normal'], fontSize=8.5, leading=10, fontName='Helvetica-Bold', textColor=colors.HexColor('#555555'), alignment=2)
@@ -218,44 +223,76 @@ def generate_calendar_pdf(df: pd.DataFrame, calendar_weeks: list, month_label: s
     link_style = ParagraphStyle('LinkStyle', parent=styles['Normal'], fontSize=6, leading=7.5, textColor=colors.HexColor('#0056b3'))
     empty_cell_style = ParagraphStyle('EmptyCell', parent=styles['Normal'], fontSize=6, leading=7, textColor=colors.HexColor('#cccccc'), alignment=1)
 
-    elements = [
-        Paragraph(f"Learn@TLC - Course Training Calendar ({month_label})", title_style),
-        Spacer(1, 8)
-    ]
-
+    elements = []
+    
+    # 1. Embed Header Banner Image (with automatic aspect ratio preservation)
+    banner_path = "LearnTLC_.png"
+    if os.path.exists(banner_path):
+        try:
+            reader = ImageReader(banner_path)
+            orig_w, orig_h = reader.getSize()
+            aspect = orig_h / float(orig_w)
+            
+            # Target width up to full printable width (756 pt), capped at 50 pt height
+            target_w = 756.0
+            target_h = target_w * aspect
+            if target_h > 50.0:
+                target_h = 50.0
+                target_w = target_h / aspect
+                
+            banner_img = RLImage(banner_path, width=target_w, height=target_h)
+            banner_img.hAlign = 'CENTER'
+            elements.append(banner_img)
+            elements.append(Spacer(1, 6))
+        except Exception:
+            elements.append(Paragraph("Learn@TLC - Course Training Calendar", title_style))
+            elements.append(Spacer(1, 6))
+    else:
+        elements.append(Paragraph("Learn@TLC - Course Training Calendar", title_style))
+        elements.append(Spacer(1, 6))
+    
+    # 2. Build Calendar Table
     weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     table_data = [[Paragraph(day, day_header_style) for day in weekdays]]
-
+    
+    calendar_weeks = [
+        [2, 3, 4, 5, 6],
+        [9, 10, 11, 12, 13],
+        [16, 17, 18, 19, 20],
+        [23, 24, 25, 26, 27],
+        [30, 31, None, None, None]
+    ]
+    
     for week in calendar_weeks:
         row_cells = []
         for day in week:
             cell_content = []
             if day is not None:
                 cell_content.append(Paragraph(str(day), date_num_style))
-                cell_content.append(Spacer(1, 2))
-
+                cell_content.append(Spacer(1, 1))
+                
                 day_classes = df[df['Date'] == day]
                 if not day_classes.empty:
                     for _, course in day_classes.iterrows():
                         safe_title = html.escape(str(course['Title']))
                         safe_loc = html.escape(str(course['Location']))
                         safe_time = f"{course['StartTime']} - {course['EndTime']}"
-
+                        
                         cell_content.append(Paragraph(safe_title, course_name_style))
                         cell_content.append(Paragraph(f"{safe_time} | {safe_loc}", course_meta_style))
-
+                        
                         enroll_link = course.get('InPersonLink')
                         if pd.notna(enroll_link) and str(enroll_link).startswith("http"):
                             cell_content.append(Paragraph(f'<a href="{enroll_link}"><u>Enroll Now &rarr;</u></a>', link_style))
-                        cell_content.append(Spacer(1, 3))
+                        cell_content.append(Spacer(1, 2))
                 else:
                     cell_content.append(Paragraph("&nbsp;", empty_cell_style))
             else:
                 cell_content.append(Paragraph("&nbsp;", empty_cell_style))
-
+            
             row_cells.append(cell_content)
         table_data.append(row_cells)
-
+    
     cal_table = Table(table_data, colWidths=[151.2] * 5)
     cal_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f4e79')),
@@ -263,15 +300,14 @@ def generate_calendar_pdf(df: pd.DataFrame, calendar_weeks: list, month_label: s
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
         ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#1f4e79')),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
     ]))
-
+    
     elements.append(cal_table)
     doc.build(elements)
     pdf_buffer.seek(0)
     return pdf_buffer
-
 
 # 6. Sidebar Data Ingestion & Settings
 st.sidebar.header("📂 1. Upload Data Source")
