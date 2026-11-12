@@ -86,7 +86,6 @@ def parse_uploaded_schedule(file_source, desc_dict: dict) -> pd.DataFrame:
             else:
                 title_part = course_name.strip()
 
-
             course_id = str(row.get("Course ID", "")).strip()
             enroll_url = f"https://learningmanager.adobe.com/app/learner?accountId=57953#/course/{course_id}"
             description = desc_dict.get(title_part, f"Class description for {title_part}.")
@@ -171,7 +170,7 @@ def generate_orchard_xml(df: pd.DataFrame, start_id: int, time_offset: int, auth
 def get_weekday_grid(df: pd.DataFrame):
     """Generates Monday-Friday week arrays dynamically based on the schedule's month/year."""
     if df.empty or "FullDate" not in df.columns:
-        return [[2, 3, 4, 5, 6], [9, 10, 11, 12, 13], [16, 17, 18, 19, 20], [23, 24, 25, 26, 27], [30, 31, None, None, None]], "Monthly"
+        return [,, [16, 17, 18, 19, 20], [23, 24, 25, 26, 27], [30, 31, None, None, None]], "Monthly"
 
     first_date = pd.to_datetime(df["FullDate"].dropna().iloc[0])
     year, month = first_date.year, first_date.month
@@ -306,7 +305,7 @@ st.sidebar.header("⚙️ 2. Orchard XML Settings")
 start_id = st.sidebar.number_input("Starting Course ID", min_value=1, value=201, step=1)
 time_offset = st.sidebar.selectbox(
     "Timezone Offset (Central to UTC)",
-    options=[6, 5, 0],
+    options=,
     index=0,
     help="Use 6 for CST (Nov–Mar), 5 for CDT (Mar–Nov), or 0 if already UTC."
 )
