@@ -223,15 +223,17 @@ def generate_calendar_pdf(df: pd.DataFrame) -> io.BytesIO:
 
     elements = []
     
-    # 1. Embed Header Banner Image (Automatically scaled to fit 540 pt portrait width)
+       # 1. Embed Header Banner Image (Automatically scaled to fit 540 pt portrait width)
     banner_path = "LearnTLC_.png"
+    banner_loaded = False
+    
     if os.path.exists(banner_path):
         try:
             reader = ImageReader(banner_path)
             orig_w, orig_h = reader.getSize()
             aspect = orig_h / float(orig_w)
             
-            # Target width set to full printable portrait width (540 pt), capped at 45 pt height
+            # Scale to fit printable portrait width (540 pt), capped at 45 pt height
             target_w = 540.0
             target_h = target_w * aspect
             if target_h > 45.0:
@@ -242,10 +244,12 @@ def generate_calendar_pdf(df: pd.DataFrame) -> io.BytesIO:
             banner_img.hAlign = 'CENTER'
             elements.append(banner_img)
             elements.append(Spacer(1, 8))
+            banner_loaded = True
         except Exception:
-            elements.append(Paragraph("Learn@TLC - Course Training Calendar", title_style))
-            elements.append(Spacer(1, 8))
-    else:
+            # Fallback silently if image cannot be read or processed
+            pass
+
+    if not banner_loaded:
         elements.append(Paragraph("Learn@TLC - Course Training Calendar", title_style))
         elements.append(Spacer(1, 8))
     
