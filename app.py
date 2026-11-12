@@ -377,7 +377,7 @@ else:
     # Sidebar Exports
     st.sidebar.markdown("---")
     st.sidebar.header("📥 4. Quick Exports")
-    pdf_output = generate_calendar_pdf(filtered_df, calendar_weeks, month_label)
+    pdf_output = generate_calendar_pdf(filtered_df)
     st.sidebar.download_button(
         label="📄 Download Printable Calendar PDF",
         data=pdf_output,
