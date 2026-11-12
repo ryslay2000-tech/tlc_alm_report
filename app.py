@@ -83,7 +83,7 @@ def parse_uploaded_schedule(file_source, desc_dict: dict) -> pd.DataFrame:
             course_name = str(row.get("Course Name", ""))
             if ": " in course_name:
                 split_parts = course_name.split(": ", 1)
-                title_part = split_parts.strip()
+                title_part = split_parts[1].strip()
             else:
                 title_part = course_name.strip()
 
