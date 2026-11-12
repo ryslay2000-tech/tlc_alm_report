@@ -107,7 +107,6 @@ def parse_uploaded_schedule(file_source, desc_dict: dict) -> pd.DataFrame:
         out_df = out_df.sort_values(by=["FullDate", "StartTime24"]).reset_index(drop=True)
     return out_df
 
-
 # 3. Orchard XML Generator
 def generate_orchard_xml(df: pd.DataFrame, start_id: int, time_offset: int, author: str, owner: str, status: str) -> bytes:
     """Compiles the unified DataFrame into an Orchard CMS XML Recipe."""
