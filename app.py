@@ -438,3 +438,5 @@ else:
     with tab_xml:
         st.subheader("📄 Orchard XML Recipe Preview")
         st.code(xml_output[:2500].decode("utf-8") + "\n\n... (Download full XML from sidebar) ...", language="xml")
+
+"fix: added index to split"
