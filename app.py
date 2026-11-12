@@ -10,8 +10,9 @@ import pandas as pd
 import streamlit as st
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.utils import ImageReader
-from reportlab.platypus import Image as RLImage
+from reportlab.platypus import Image as RLImage, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 # Page Configuration
 st.set_page_config(
