@@ -86,6 +86,7 @@ def parse_uploaded_schedule(file_source, desc_dict: dict) -> pd.DataFrame:
             else:
                 title_part = course_name.strip()
 
+
             course_id = str(row.get("Course ID", "")).strip()
             enroll_url = f"https://learningmanager.adobe.com/app/learner?accountId=57953#/course/{course_id}"
             description = desc_dict.get(title_part, f"Class description for {title_part}.")
