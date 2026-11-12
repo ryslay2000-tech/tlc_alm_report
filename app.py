@@ -82,11 +82,11 @@ def parse_uploaded_schedule(file_source, desc_dict: dict) -> pd.DataFrame:
 
             course_name = str(row.get("Course Name", ""))
             if ": " in course_name:
-                # Use list indexing cleanly
                 split_parts = course_name.split(": ", 1)
                 title_part = split_parts.strip()
             else:
                 title_part = course_name.strip()
+
 
             course_id = str(row.get("Course ID", "")).strip()
             enroll_url = f"https://learningmanager.adobe.com/app/learner?accountId=57953#/course/{course_id}"
